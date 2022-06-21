@@ -29,6 +29,7 @@ public class Employe {
     private Integer performance = Entreprise.PERFORMANCE_BASE;
 
     private Double tempsPartiel = 1.0;
+    private double pourcentage;
 
     public Employe() {
     }
@@ -60,11 +61,16 @@ public class Employe {
         return Entreprise.NB_CONGES_BASE + this.getNombreAnneeAnciennete();
     }
 
+    //corriger les nommages,
     public Integer getNbRtt(){
         return getNbRtt(LocalDate.now());
     }
 
     public Integer getNbRtt(LocalDate d){
+        //il a fait express d'inverser les 2
+        //voir avec le test pour mettre en evidence c'est err
+        //indente, commente faire en sot qui soi lisible
+        //test oarametrer
         int i1 = d.isLeapYear() ? 365 : 366;int var = 104;
         switch (LocalDate.of(d.getYear(),1,1).getDayOfWeek()){
         case THURSDAY: if(d.isLeapYear()) var =  var + 1; break;
@@ -115,7 +121,11 @@ case SATURDAY:var = var + 1;
     }
 
     //Augmenter salaire
-    //public void augmenterSalaire(double pourcentage){}
+    //on appelle ce methode en passen en parametre
+    //faire une axception
+    public void augmenterSalaire(double pourcentage){
+        this.pourcentage = pourcentage;
+    }
 
     public Long getId() {
         return id;
