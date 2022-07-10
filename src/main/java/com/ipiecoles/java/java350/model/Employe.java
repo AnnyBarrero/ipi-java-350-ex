@@ -65,24 +65,44 @@ public class Employe {
     public Integer getNbRtt(){
         return getNbRtt(LocalDate.now());
     }
-
-    public Integer getNbRtt(LocalDate d){
-        //il a fait express d'inverser les 2
-        //voir avec le test pour mettre en evidence c'est err
-        //indente, commente faire en sot qui soi lisible
-        //test oarametrer
-        int i1 = d.isLeapYear() ? 365 : 366;int var = 104;
-        switch (LocalDate.of(d.getYear(),1,1).getDayOfWeek()){
-        case THURSDAY: if(d.isLeapYear()) var =  var + 1; break;
+    /**
+         Le nombre de RTT se calcule à partir de la formule suivante :
+        - Nombre de jours dans l'année
+        - Nombre de jours travaillés dans l'année en plein temps
+        - Nombre de samedi et dimanche dans l'année
+        - Nombre de jours fériés ne tombant pas le week-end
+        - Nombre de congés payés**. */
+    //il a fait express d'inverser les 2
+    //test parametrer
+    //voir avec le test pour mettre en evidence c'est err
+    //indenter, commenter et faire en soit qui soit lisible
+    public Integer getNbRtt(LocalDate dateReference){
+        int nbJoursAnnee = dateReference.isLeapYear() ? 365 : 366;
+        int nbWeekend = 104;
+        switch (LocalDate.of(dateReference.getYear(),1,1).getDayOfWeek()){
+        case THURSDAY:
+            if(dateReference.isLeapYear())
+                nbWeekend =  nbWeekend + 1;
+            break;
         case FRIDAY:
-        if(d.isLeapYear()) var =  var + 2;
-        else var =  var + 1;
-case SATURDAY:var = var + 1;
-                    break;
+        if(dateReference.isLeapYear())
+            nbWeekend =  nbWeekend + 2;
+        else
+            nbWeekend = nbWeekend + 1;
+        case SATURDAY:
+        nbWeekend = nbWeekend + 1;
+        break;
+            default:
+                break;
         }
-        int monInt = (int) Entreprise.joursFeries(d).stream().filter(localDate ->
+        int nbWeekHolidays = (int) Entreprise.joursFeries(dateReference).stream().filter(localDate ->
                 localDate.getDayOfWeek().getValue() <= DayOfWeek.FRIDAY.getValue()).count();
-        return (int) Math.ceil((i1 - Entreprise.NB_JOURS_MAX_FORFAIT - var - Entreprise.NB_CONGES_BASE - monInt) * tempsPartiel);
+        return (int) Math.ceil((
+                nbJoursAnnee
+                        - Entreprise.NB_JOURS_MAX_FORFAIT
+                        - nbWeekend
+                        - Entreprise.NB_CONGES_BASE
+                        - nbWeekHolidays) * tempsPartiel);
     }
 
     /**
