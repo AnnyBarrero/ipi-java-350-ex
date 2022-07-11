@@ -1,5 +1,7 @@
 package com.ipiecoles.java.java350.model;
 
+import com.ipiecoles.java.java350.exception.EmployeException;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -29,6 +31,7 @@ public class Employe {
     private Integer performance = Entreprise.PERFORMANCE_BASE;
 
     private Double tempsPartiel = 1.0;
+    private double pourcentage;
 
     public Employe() {
     }
@@ -53,30 +56,54 @@ public class Employe {
                 return 0;
             }
             return LocalDate.now().getYear() - dateEmbauche.getYear();
-
     }
 
     public Integer getNbConges() {
         return Entreprise.NB_CONGES_BASE + this.getNombreAnneeAnciennete();
     }
 
+    //corriger les nommages,
     public Integer getNbRtt(){
         return getNbRtt(LocalDate.now());
     }
-
-    public Integer getNbRtt(LocalDate d){
-        int i1 = d.isLeapYear() ? 365 : 366;int var = 104;
-        switch (LocalDate.of(d.getYear(),1,1).getDayOfWeek()){
-        case THURSDAY: if(d.isLeapYear()) var =  var + 1; break;
+    /**
+         Le nombre de RTT se calcule à partir de la formule suivante :
+        - Nombre de jours dans l'année
+        - Nombre de jours travaillés dans l'année en plein temps
+        - Nombre de samedi et dimanche dans l'année
+        - Nombre de jours fériés ne tombant pas le week-end
+        - Nombre de congés payés**. */
+    //il a fait express d'inverser les 2
+    //test parametrer
+    //voir avec le test pour mettre en evidence c'est err
+    //indenter, commenter et faire en soit qui soit lisible
+    public Integer getNbRtt(LocalDate dateReference){
+        int nbJoursAnnee = dateReference.isLeapYear() ? 365 : 366;
+        int nbWeekend = 104;
+        switch (LocalDate.of(dateReference.getYear(),1,1).getDayOfWeek()){
+        case THURSDAY:
+            if(dateReference.isLeapYear())
+                nbWeekend =  nbWeekend + 1;
+            break;
         case FRIDAY:
-        if(d.isLeapYear()) var =  var + 2;
-        else var =  var + 1;
-case SATURDAY:var = var + 1;
-                    break;
+        if(dateReference.isLeapYear())
+            nbWeekend =  nbWeekend + 2;
+        else
+            nbWeekend = nbWeekend + 1;
+        case SATURDAY:
+        nbWeekend = nbWeekend + 1;
+        break;
+            default:
+                break;
         }
-        int monInt = (int) Entreprise.joursFeries(d).stream().filter(localDate ->
+        int nbWeekHolidays = (int) Entreprise.joursFeries(dateReference).stream().filter(localDate ->
                 localDate.getDayOfWeek().getValue() <= DayOfWeek.FRIDAY.getValue()).count();
-        return (int) Math.ceil((i1 - Entreprise.NB_JOURS_MAX_FORFAIT - var - Entreprise.NB_CONGES_BASE - monInt) * tempsPartiel);
+        return (int) Math.ceil((
+                nbJoursAnnee
+                        - Entreprise.NB_JOURS_MAX_FORFAIT
+                        - nbWeekend
+                        - Entreprise.NB_CONGES_BASE
+                        - nbWeekHolidays) * tempsPartiel);
     }
 
     /**
@@ -114,8 +141,18 @@ case SATURDAY:var = var + 1;
         return prime * this.tempsPartiel;
     }
 
-    //Augmenter salaire
-    //public void augmenterSalaire(double pourcentage){}
+    //Augmenter salaire exception
+    //on appelle ce methode en passent en parametre
+    //faire une exception
+    public void augmenterSalaire(Double pourcentage) throws EmployeException {
+        /*this.pourcentage = pourcentage;*/
+        if (pourcentage == null)
+            throw new EmployeException ("Percentage increase cannot be null");
+        else if (pourcentage < 0)
+            throw new EmployeException("Percentage increase cannot be negative");
+        else
+            this.salaire = Math.round(this.getSalaire() * (1 + pourcentage) * 100) / 100d;
+    }
 
     public Long getId() {
         return id;

@@ -1,11 +1,14 @@
 package com.ipiecoles.java.java350.model;
 
+import com.ipiecoles.java.java350.exception.EmployeException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mockito;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoField;
 
 public class EmployeTest {
 
@@ -87,4 +90,86 @@ public class EmployeTest {
         Assertions.assertThat(primeObtenue).isEqualTo(prime);
     }
 
+    @Test
+    void testAugmenterSalaire() throws EmployeException{
+        //Given
+        Employe employe = new Employe();
+        employe.setSalaire(1000.0);
+        //When
+        employe.augmenterSalaire(0.15);
+        // Then
+        Assertions.assertThat(employe.getSalaire()).isEqualTo(1150.0);
+    }
+
+    @ParameterizedTest
+    @CsvSource( {
+          "1000.0, -0.0, 1000.0",
+          "1500.0, 0.15, 1725.0",
+          "1700.0, 0.75, 2975.0",
+          "2000.0, 1.50, 5000.0",
+    })
+    void testAugmenterSalaireCasNominaux(Double ancienSalaire, Double augmentation, Double nouveauSalaire) throws EmployeException {
+
+        //Given
+        Employe employe = new Employe();
+        employe.setSalaire(ancienSalaire);
+        //When
+        employe.augmenterSalaire(augmentation);
+        // Then
+        Assertions.assertThat(employe.getSalaire()).isEqualTo(nouveauSalaire);
+    }
+
+    @ParameterizedTest
+    @CsvSource( {
+          "1000.0, 0.25, 1250.0",
+          "1500.0, 0.95, 2925.0",
+          "1700.0, 1.05, 3485.0",
+          "2000.0, 2.50, 7000.0",
+    })
+    void testAugmenterSalaireCasException(Double ancienSalaire, Double augmentation, Double nouveauSalaire) throws EmployeException {
+
+        //Given
+        Employe employe = new Employe();
+        employe.setSalaire(ancienSalaire);
+        //When
+        employe.augmenterSalaire(augmentation);
+        // Then
+        Assertions.assertThat(employe.getSalaire()).isEqualTo(nouveauSalaire);
+    }
+
+    @Test
+    void testAugmenterSalaireZeroPercentage() throws EmployeException {
+        //Given
+        Employe employe = new Employe();
+        employe.setSalaire(1500.0);
+
+        //when
+        Throwable t = Assertions.catchThrowable(() ->
+        {
+            employe.augmenterSalaire(0.0)
+            ;});
+
+        //Then
+        Assertions.assertThat(t).isInstanceOf(EmployeException.class).hasMessage("the percentage you put is incorrect it should be more than zero");
+    }
+
+
+
+    @ParameterizedTest
+    @CsvSource({
+            "-3,9",
+            "1,10",
+            "2,9",
+            "0,11",
+    })
+
+    void testgetNbRtt(Integer dateReference, Integer nbrttAttendu) {
+        // Given
+        LocalDate date = LocalDate.now().minusYears(dateReference);
+        Employe employe = new Employe();
+        //When
+        int waitingNbr = employe.getNbRtt(date);
+        //Then
+        Assertions.assertThat(waitingNbr).isEqualTo(nbrttAttendu);
+    }
 }
