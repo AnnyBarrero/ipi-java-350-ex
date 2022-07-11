@@ -5,8 +5,10 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mockito;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoField;
 
 public class EmployeTest {
 
@@ -136,9 +138,38 @@ public class EmployeTest {
     }
 
     @Test
-    void testAugmenterSalaireWithoutException() throws EmployeException{
+    void testAugmenterSalaireZeroPercentage() throws EmployeException {
+        //Given
+        Employe employe = new Employe();
+        employe.setSalaire(1500.0);
+
+        //when
+        Throwable t = Assertions.catchThrowable(() ->
+        {
+            employe.augmenterSalaire(0.0)
+            ;});
+
+        //Then
+        Assertions.assertThat(t).isInstanceOf(EmployeException.class).hasMessage("the percentage you put is incorrect it should be more than zero");
+    }
 
 
 
+    @ParameterizedTest
+    @CsvSource({
+            "-3,9",
+            "1,10",
+            "2,9",
+            "0,11",
+    })
+
+    void testgetNbRtt(Integer dateReference, Integer nbrttAttendu) {
+        // Given
+        LocalDate date = LocalDate.now().minusYears(dateReference);
+        Employe employe = new Employe();
+        //When
+        int waitingNbr = employe.getNbRtt(date);
+        //Then
+        Assertions.assertThat(waitingNbr).isEqualTo(nbrttAttendu);
     }
 }
